@@ -22,3 +22,7 @@ Notes:
  - script for automated tests
  - start work on forth
 
+
+## Resources
+
+ - "8. Semihosting" in *ARM® Compiler toolchain, Version 5.03, Developing Software for ARM Processors*
