@@ -1,5 +1,5 @@
-AS      := arm-none-eabi-gcc
-ASFLAGS := -x assembler-with-cpp -g
+AS      := arm-none-eabi-as
+ASFLAGS := -g
 LD      := arm-none-eabi-ld
 LDFLAGS := -nostartfiles -nostdlib -g
 
