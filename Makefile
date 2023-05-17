@@ -6,7 +6,7 @@ LDFLAGS := -nostartfiles -nostdlib -g
 # Rule for assembling .s -> .o files
 build: src/main.s
 	$(AS) $(ASFLAGS) -c src/main.s -o src/main.o
-	$(LD) $(LDFLAGS) -T src/linkerscript.ld src/main.o -o src/main.elf 
+	$(LD) $(LDFLAGS) -Ttext 0x00000000 -Tdata 0x20000000 src/main.o -o src/main.elf 
 
 .PHONY: clean
 clean:
