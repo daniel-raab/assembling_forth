@@ -146,6 +146,11 @@ reset_handler:
 				ldrb r0, [r8, r2]
 				add r3, r7, #4 
 				ldrb r1, [r3, r2]
+				// check for space and convert to null termination
+				cmp r0, #' '
+				it eq
+				ldreq r0, =0
+				// compare word char with definition char
 				cmp r0, r1
 				bne next_definition // no match
 				cmp r0, #0

@@ -18,10 +18,8 @@ Notes:
  - script for building and running in qemu
 
 ## To Do
- - get input/output via semihosting
- - script for automated tests
- - start work on forth
-
+ - parse numbers: negative, >10
+ - execute forth words: DOT creates hardfault: how to get address?
 
 ## Resources
 
