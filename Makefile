@@ -18,5 +18,5 @@ emulate: build
 
 .PHONY: debug
 debug: build
-	arm-none-eabi-gdb -q src/main.elf -tui -ex "target remote localhost:1234" -ex "layout regs" -ex "display (char[100]) input_array"
+	arm-none-eabi-gdb -q src/main.elf -tui -ex "target remote localhost:1234" -ex "layout regs" -ex "display (char[100]) input_array" -ex "display (char[100]) output_array"
 
