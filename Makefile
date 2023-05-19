@@ -14,7 +14,7 @@ clean:
 
 .PHONY: emulate
 emulate: build
-	qemu-system-arm -cpu cortex-m3 -M netduino2 -semihosting -s -S -nographic -kernel src/main.elf
+	qemu-system-arm -cpu cortex-m3 -M netduino2 -s -S -nographic -kernel src/main.elf
 
 .PHONY: debug
 debug: build

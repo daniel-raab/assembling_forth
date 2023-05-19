@@ -22,7 +22,7 @@
 // the vector table
 .type vtable, %object
 vtable:
-	.word 0x12345678
+	.word 0x0 // dummy value
 	.word reset_handler
 .size vtable, .-vtable
 
@@ -31,14 +31,10 @@ vtable:
 .type reset_handler, %function
 _start:
 reset_handler:
-	// application: load dummy value into register r7
-	LDR  r7, =0xDEADBEEF
-	MOVS r0, #0
 	main_loop:
-		ADDS r0, r0, #2
-		BL getc
-		// jump back to label main_loop, creating an endless loop
-		B    main_loop
+		// get character: into r0
+		bl getc
+		b    main_loop
 .size reset_handler, .-reset_handler
 
 // returns next input character in r0, uses r1
@@ -49,14 +45,14 @@ next_c:	.word input
 	.type getc, %function
 adr_next_c: .word next_c
 getc:
-	LDR r1, adr_next_c // get address of next character address
-	LDR r2, [r1] // address of next character
+	ldr r1, adr_next_c // get address of next character address
+	ldr r2, [r1] // address of next character
 	// load next character
-	LDRB r0, [r2]
+	ldrb r0, [r2]
 	// check for end of string
-	CMP r0, #0
-	ITT NE
-	ADDNE r2, r2, #1
-	STRNE r2, [r1]
+	cmp r0, #0
+	itt NE
+	addne r2, r2, #1
+	strne r2, [r1]
 	// return
-	BLX lr
+	blx lr
