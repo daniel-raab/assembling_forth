@@ -27,7 +27,9 @@ vtable:
 .size vtable, .-vtable
 
 // reset handler, called on reset
+.global _start
 .type reset_handler, %function
+_start:
 reset_handler:
 	// application: load dummy value into register r7
 	LDR  r7, =0xDEADBEEF
@@ -39,9 +41,22 @@ reset_handler:
 		B    main_loop
 .size reset_handler, .-reset_handler
 
-// get character
-.type getc, %function
+// returns next input character in r0, uses r1
+	.data
+input:	.asciz "1 2 3 . . .\n"
+next_c:	.word input
+	.text
+	.type getc, %function
+adr_next_c: .word next_c
 getc:
-	ADD r7, #1
+	LDR r1, adr_next_c // get address of next character address
+	LDR r2, [r1] // address of next character
+	// load next character
+	LDRB r0, [r2]
+	// check for end of string
+	CMP r0, #0
+	ITT NE
+	ADDNE r2, r2, #1
+	STRNE r2, [r1]
+	// return
 	BLX lr
-
