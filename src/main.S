@@ -107,6 +107,7 @@ reset_handler:
 		// r0: character of word
 		// r1: character of definition
 		// r2: index of character in word
+		// r4: in char_match
 		eval:
 			// get address of input and definition
 			ldr r8, adr_input_array
@@ -159,22 +160,22 @@ reset_handler:
 				// get start of definition code (skip name and padding)
 				// offset has to be multiple of 2
 				tst r2, #1
-				it ne
-				addne r2, r2, #1
-				add r7, r3, r2 
+				ite ne
+				addne r4, r2, #1
+				moveq r4, r2
+				add r7, r3, r4 
 				// bit 0 has to be 1, for thumb state, see https://developer.arm.com/documentation/dui0489/i/arm-and-thumb-instructions/blx
 				orr r7, r7, #1
 				blx r7
 
 			// word is done, more words?
 			eval_more:
-				// check if current character is null already
+				// check if current character is null termination
 				ldrb r0, [r8, r2]
 				cmp r0, #0
 				beq eval_ok // done
 				// set pointer to new word
 				add r2, r2, #1
-				add r2, r2, #4 // skip
 				add r8, r8, r2
 				b no_match
 
