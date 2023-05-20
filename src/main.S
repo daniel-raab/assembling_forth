@@ -144,7 +144,7 @@ reset_handler:
 			char_match:
 				add r2, r2, #1
 				ldrb r0, [r8, r2]
-				add r3, r7, #4 
+				add r3, r7, #4 // r3 contains beginning of definition word
 				ldrb r1, [r3, r2]
 				// check for space and convert to null termination
 				cmp r0, #' '
@@ -156,7 +156,16 @@ reset_handler:
 				cmp r0, #0
 				bne char_match // not yet null termination, check rest of word
 				// match! execute word
+				// get start of definition code (skip name and padding)
+				// offset has to be multiple of 2
+				tst r2, #1
+				it ne
+				addne r2, r2, #1
+				add r7, r3, r2 
+				// bit 0 has to be 1, for thumb state, see https://developer.arm.com/documentation/dui0489/i/arm-and-thumb-instructions/blx
+				orr r7, r7, #1
 				blx r7
+
 			// word is done, more words?
 			eval_more:
 				// check if current character is null already
@@ -165,6 +174,7 @@ reset_handler:
 				beq eval_ok // done
 				// set pointer to new word
 				add r2, r2, #1
+				add r2, r2, #4 // skip
 				add r8, r8, r2
 				b no_match
 
@@ -231,7 +241,7 @@ getc:
 	strne r2, [r1]
 	
 	pop {r1, r2}
-	blx lr
+	bx lr
 
 
 // putc: prints the character in r0 to output_array
@@ -250,21 +260,23 @@ putc:
 	str r2, [r1]
 	
 	pop {r1, r2}
-	blx lr
+	bx lr
 	
 
 
 //----------- FORTH WORDS -------------------
 /*
-forth words have the following memory layout (same as jones forth):
+forth words have the following memory layout (from jones forth):
 
-     ^ 
-     |
- +-------+---+---+---+----+----------------+
- | LINK  | D | U | P | \0 | code of DUP    |
- +-------+---+---+---+----+----------------+
-     ^     string (null terminated) with possible padding needed for alignment
-     |
+	  pointer to previous word
+	   ^
+	   |
+	+--|------+---+---+---+---+---+---+---+---+------------+------------+------------+------------+
+	| LINK    | 6 | D | O | U | B | L | E | 0 | DOCOL      | DUP        | +          | EXIT       |
+	+---------+---+---+---+---+---+---+---+---+------------+--|---------+------------+------------+
+           ^       len                         pad  codeword      |
+	   |							  V
+	  LINK in next word				points to codeword of DUP
 */
 	.text
 
@@ -276,12 +288,17 @@ Lheader:
 	.asciz "."
 	.align 2
 	.size Lheader, .-Lheader
-
+DOT_start:
+	push {lr}
 	// get value from stack
+	data_stack
 	pop {r0}
-	// output characters
-	ldr r0, ='a' // dummy value
-	b putc
+	return_stack
+	// convert to ascii
+	// TODO: >10, negative
+	add r0, r0, #'0'
+	bl putc
+	ldr r0, =' '
+	bl putc
 	// return
-	blx lr
-	
+	pop {pc}

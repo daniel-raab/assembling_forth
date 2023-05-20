@@ -1,0 +1,5 @@
+display (char[100]) input_array
+display (char[100]) output_array
+display 0x20002000-$r12
+x/8u $r12
+display 0x20004000-$r11
