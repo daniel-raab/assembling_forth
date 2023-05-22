@@ -82,7 +82,7 @@ reset_handler:
 	ldr r12, =dstack
 	ldr r11, =rstack
 	ldr sp, =rstack
-	ldr r10, =DOT
+	ldr r10, =PLUS
 
 	interpret:
 		// r1 contains the address to the (unwritten) character in input_array
@@ -96,6 +96,9 @@ reset_handler:
 			// if the character is a newline, the input will be evaluated
 			cmp r0, #'\n'
 			beq eval
+			// if character is null byte, input is done
+			cmp r0, #0
+			beq done
 			// save character into input_array
 			strb r0, [r1]
 			add r1, r1, #1
@@ -111,9 +114,9 @@ reset_handler:
 		eval:
 			// get address of input and definition
 			ldr r8, adr_input_array
+			mov r7, r10
 
 		no_match:
-			mov r7, r10
 			ldr r2, =#0
 			// get first character of word
 			ldrb r0, [r8, r2]	
@@ -177,6 +180,7 @@ reset_handler:
 				// set pointer to new word
 				add r2, r2, #1
 				add r8, r8, r2
+				mov r7, r10 // reset definition pointer to first definition
 				b no_match
 
 		// error, not defined and not a number
@@ -199,13 +203,15 @@ reset_handler:
 			bl putc
 	
 		b    interpret
+	done:
+		b done
 .size reset_handler, .-reset_handler
 
 
 //--------- INPUT/OUTPUT ---------------
 	.data
 input:	
-	.asciz "1 2 3 . . .\n"
+	.asciz "1 2 3 + . .\nhello\n"
 // input/output buffers
 input_array:
 	.space 100
@@ -283,13 +289,9 @@ forth words have the following memory layout (from jones forth):
 
 // .
 DOT:
-	.type Lheader, %object
-Lheader:
 	.word 0 // first word, null pointer
 	.asciz "."
 	.align 2
-	.size Lheader, .-Lheader
-DOT_start:
 	push {lr}
 	// get value from stack
 	data_stack
@@ -303,3 +305,19 @@ DOT_start:
 	bl putc
 	// return
 	pop {pc}
+
+PLUS:
+	.word DOT
+	.asciz "+"
+	.align 2
+	push {r1}
+	data_stack
+	pop {r0}
+	pop {r1}
+	add r0, r1, r1
+	push {r0}
+	return_stack
+	pop {r1}
+	bx lr
+
+
